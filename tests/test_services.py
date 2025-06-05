@@ -14,28 +14,29 @@ app.include_router(router)
 async def test_get_services(monkeypatch):
     # Mock data
     mock_services = [
-        {"_id": "123abc", "name": "Yoga", "category": "Health", "is_active": True},
+        {"_id": "123abc", "name": "Physiotherapist", "category": "Health", "is_active": True},
         {"_id": "456def", "name": "Swimming", "category": "Sports", "is_active": True}
     ]
 
-    # Mock methods
-    async def mock_to_list(length):
-        return mock_services
-
+    # Define mock cursor
     mock_cursor = MagicMock()
     mock_cursor.sort.return_value.skip.return_value.limit.return_value = mock_cursor
-    mock_cursor.to_list = mock_to_list
+    mock_cursor.to_list = AsyncMock(return_value=mock_services)
 
+    # Mock db methods
     mock_find = MagicMock(return_value=mock_cursor)
     mock_count = AsyncMock(return_value=5)
 
+    # Monkeypatch db access
     monkeypatch.setattr(service_module.db.services, "find", mock_find)
     monkeypatch.setattr(service_module.db.services, "count_documents", mock_count)
 
+    # Run test
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         response = await ac.get("/services")
 
+    # Assertions
     assert response.status_code == 200
     data = response.json()
     assert "data" in data
