@@ -18,22 +18,24 @@ async def test_get_services():
         {"_id": "456def", "name": "Swimming", "category": "Sports", "is_active": True}
     ]
 
-    # Create mock cursor with mocked to_list method
     mock_cursor = MagicMock()
     mock_cursor.sort.return_value.skip.return_value.limit.return_value = mock_cursor
     mock_cursor.to_list = AsyncMock(return_value=mock_services)
 
-    # Patch both find and count_documents using patch.object
-    with patch.object(service_module.db.services, "find", return_value=mock_cursor):
-        with patch.object(service_module.db.services, "count_documents", new=AsyncMock(return_value=2)):
-            transport = ASGITransport(app=app)
-            async with AsyncClient(transport=transport, base_url="http://test") as ac:
-                response = await ac.get("/services")
+    # Create mock services collection
+    mock_services_collection = MagicMock()
+    mock_services_collection.find.return_value = mock_cursor
+    mock_services_collection.count_documents = AsyncMock(return_value=2)
 
-            # Assert results
-            assert response.status_code == 200
-            data = response.json()
-            assert "data" in data
-            assert "total" in data
-            assert data["total"] == 2
-            assert data["data"][0]["name"] == "Physiotherapist"
+    # Patch the db.services object itself
+    with patch.object(service_module.db, "services", mock_services_collection):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            response = await ac.get("/services")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "data" in data
+        assert "total" in data
+        assert data["total"] == 2
+        assert data["data"][0]["name"] == "Physiotherapist"
