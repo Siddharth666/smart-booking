@@ -27,7 +27,7 @@ async def test_get_services(monkeypatch):
     mock_cursor.to_list = mock_to_list
 
     mock_find = MagicMock(return_value=mock_cursor)
-    mock_count = AsyncMock(return_value=2)
+    mock_count = AsyncMock(return_value=5)
 
     monkeypatch.setattr(service_module.db.services, "find", mock_find)
     monkeypatch.setattr(service_module.db.services, "count_documents", mock_count)
