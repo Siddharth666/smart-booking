@@ -1,0 +1,19 @@
+Back-End
+Create a virtual environment (venv) python -m venv venv
+
+To activate venv .\venv\Scripts\activate
+
+To install all dependencies pip install -r requirements.txt
+
+To start Project locally uvicorn main:app --reload
+
+Front-End
+npm run dev
+
+---------------------------
+
+APIs
+1. /register
+2. /login
+3. /bookings
+4. /admin/bookings
