@@ -25,7 +25,7 @@ async def test_get_services():
 
     # Patch both find and count_documents using patch.object
     with patch.object(service_module.db.services, "find", return_value=mock_cursor):
-        with patch.object(service_module.db.services, "count_documents", new=AsyncMock(return_value=5)):
+        with patch.object(service_module.db.services, "count_documents", new=AsyncMock(return_value=2)):
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://test") as ac:
                 response = await ac.get("/services")
@@ -35,5 +35,5 @@ async def test_get_services():
             data = response.json()
             assert "data" in data
             assert "total" in data
-            assert data["total"] == 5
+            assert data["total"] == 2
             assert data["data"][0]["name"] == "Physiotherapist"
